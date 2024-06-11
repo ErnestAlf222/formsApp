@@ -1,3 +1,4 @@
+import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:forms_app/presentation/blocs/register/register_cubit.dart';
@@ -35,13 +36,15 @@ class _RegisterView extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               Center(
-                child: Image.network(
-                  'https://www.edigitalagency.com.au/wp-content/uploads/lego-logo-png-transparent-background.png',
-                  height: 210,
+                child: BounceInUp(
+                  child: Image.network(
+                    'https://1000marcas.net/wp-content/uploads/2020/01/logo-Lego.png',
+                    height: 177,
+                  ),
                 ),
               ),
+              const SizedBox(height: 30),
               const _RegisterForm(),
-              const SizedBox(height: 20),
             ],
           ),
         ),
@@ -50,93 +53,55 @@ class _RegisterView extends StatelessWidget {
   }
 }
 
-class _RegisterForm extends StatefulWidget {
+class _RegisterForm extends StatelessWidget {
   const _RegisterForm();
 
-  @override
-  State<_RegisterForm> createState() => _RegisterFormState();
-}
-
-class _RegisterFormState extends State<_RegisterForm> {
   // Creación de clave global
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
   @override
   Widget build(BuildContext context) {
     // watch => redibuja del build
     final registerCubit = context.watch<RegisterCubit>();
+    final username = registerCubit.state.username;
+    final email = registerCubit.state.email;
+    final password = registerCubit.state.password;
 
     return Form(
-        key: _formKey,
         child: Column(
-          children: [
-            // 1. TextFormfield
-            CustomTextFormField(
-              icon: Icons.unsubscribe_rounded,
-              label: 'Nombre de usuario',
-              onChanged: (value) {
-                registerCubit.usernameChanged(value);
-                _formKey.currentState?.validate();
-              },
-              validator: (value) {
-                if (value == null || value.isEmpty) return 'Campo requerido';
-                if (value.trim().isEmpty) return 'Campo requerido';
-                if (value.length < 6) return 'Más de 6 letras';
-                return null;
-              },
-            ),
-            const SizedBox(height: 30),
+      children: [
+        // 1. TextFormfield
+        CustomTextFormField(
+          icon: Icons.unsubscribe_rounded,
+          label: 'Nombre de usuario',
+          onChanged: registerCubit.usernameChanged,
+          errorMessage: username.errorMessage,
+        ),
+        const SizedBox(height: 30),
 
-            CustomTextFormField(
-              icon: Icons.alternate_email_outlined,
-              label: 'Correo',
-              onChanged: (value) {
-                registerCubit.emailChanged(value);
-                _formKey.currentState?.validate();
-              },
-              validator: (value) {
-                if (value == null || value.isEmpty) return 'Campo requerido';
-                if (value.trim().isEmpty) return 'Campo requerido';
+        CustomTextFormField(
+          icon: Icons.alternate_email_outlined,
+          label: 'Correo',
+         onChanged: registerCubit.emailChanged,
+         errorMessage: email.errorMessage,
+        ),
+        const SizedBox(height: 30),
 
-                final emailRegExp = RegExp(
-                  r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
-                );
-                if (!emailRegExp.hasMatch(value)) {
-                  return 'No tiene formato de correo';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 30),
+        CustomTextFormField(
+          icon: Icons.password_rounded,
+          label: 'Contraseña',
+          obscureText: true,
+          onChanged: registerCubit.passwordChanged,
+          errorMessage: password.errorMessage,
+        ),
+        const SizedBox(height: 45),
 
-            CustomTextFormField(
-              icon: Icons.password_rounded,
-              label: 'Contraseña',
-              obscureText: true,
-              onChanged: (value) {
-                registerCubit.passwordChanged(value);
-                _formKey.currentState?.validate();
-              },
-              validator: (value) {
-                if (value == null || value.isEmpty) return 'Campo requerido';
-                if (value.trim().isEmpty) return 'Campo requerido';
-                if (value.length < 6) return 'Más de 6 letras';
-                return null;
-              },
-            ),
-            const SizedBox(height: 45),
-
-            FilledButton.tonalIcon(
-              icon: const Icon(Icons.save),
-              label: const Text('Guardar'),
-              onPressed: () {
-                // currentState => valor actual
-                final isValid = _formKey.currentState!.validate();
-                if (!isValid) return;
-                registerCubit.onSubmit();
-              },
-            ),
-          ],
-        ));
+        FilledButton.tonalIcon(
+          icon: const Icon(Icons.save),
+          label: const Text('Guardar'),
+          onPressed: () {
+            registerCubit.onSubmit();
+          },
+        ),
+      ],
+    ));
   }
 }
